@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>内网渗透2之基本信息收集 | zyth0n的博客</title>
+  <meta name="description" content="信息收集是渗透测试中的重要环节，假定我们拿到了模拟环境中的其中一台机器，可以通过以下方式扩大自己拥有的信息： 关于本机的信息收集 网络配置信息 1ipconfig &#x2F;all   操作系统信息、版本号、系统目录、域、登陆服务器、修补程序、网卡 1systeminfo    当前系统运行进程 1tasklist    用户详细信息、sid号 1whoami &#x2F;all   网络信息 12route pr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内网渗透2之基本信息收集">
+<meta property="og:url" content="https://zyth0n.github.io/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/index.html">
+<meta property="og:site_name" content="zyth0n的博客">
+<meta property="og:description" content="信息收集是渗透测试中的重要环节，假定我们拿到了模拟环境中的其中一台机器，可以通过以下方式扩大自己拥有的信息： 关于本机的信息收集 网络配置信息 1ipconfig &#x2F;all   操作系统信息、版本号、系统目录、域、登陆服务器、修补程序、网卡 1systeminfo    当前系统运行进程 1tasklist    用户详细信息、sid号 1whoami &#x2F;all   网络信息 12route pr">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-01-14T09:00:51.482Z">
+<meta property="article:modified_time" content="2023-01-14T09:00:51.485Z">
+<meta property="article:author" content="zyth0n">
+<meta property="article:tag" content="内网渗透">
+<meta property="article:tag" content="信息收集">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zyth0n.github.io/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="zyth0n的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zyth0n" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">zyth0n</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">追寻信息安全的狂热者</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Somewhere In Your Heart</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/zyth0n" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>只求同好，无关浮名</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a><span class="category-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" rel="tag">信息收集</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" rel="tag">内网渗透</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" style="font-size: 13px;">信息收集</a> <a href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" style="font-size: 14px;">内网渗透</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F3%E4%B9%8Btoken%E7%AA%83%E5%8F%96/" class="title">内网渗透3之token窃取</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-14T09:01:29.290Z" itemprop="datePublished">2023-01-14</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" class="title">内网渗透2之基本信息收集</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-14T09:00:51.482Z" itemprop="datePublished">2023-01-14</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="title">内网渗透1之环境搭建</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-14T08:40:06.602Z" itemprop="datePublished">2023-01-14</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E6%9C%AC%E6%9C%BA%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">1.</span> <span class="toc-text">关于本机的信息收集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E5%9F%9F%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%EF%BC%8C%E5%86%85%E7%BD%91%E6%89%AB%E6%8F%8F%E9%80%9A%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">关于域的信息收集，内网扫描通用</span></a></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-内网渗透2之基本信息收集" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      内网渗透2之基本信息收集
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" class="article-date">
+	  <time datetime="2023-01-14T09:00:51.482Z" itemprop="datePublished">2023-01-14</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" rel="tag">信息收集</a>, <a class="article-tag-link-link" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" rel="tag">内网渗透</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 584(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 2(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>信息收集是渗透测试中的重要环节，假定我们拿到了模拟环境中的其中一台机器，可以通过以下方式扩大自己拥有的信息：</p>
+<h2 id="关于本机的信息收集"><a href="#关于本机的信息收集" class="headerlink" title="关于本机的信息收集"></a>关于本机的信息收集</h2><ol>
+<li><p>网络配置信息</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ipconfig</span> /all </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>操作系统信息、版本号、系统目录、<strong>域、登陆服务器、修补程序</strong>、网卡</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systeminfo  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>当前系统运行进程</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tasklist  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用户详细信息、sid号</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">whoami /all </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>网络信息</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">route <span class="built_in">print</span>  </span><br><span class="line">arp -a  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>系统服务</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic service  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>开机自启动程序信息</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic startup  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看计划任务</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">schtasks </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看本机用户，这里和域信息收集做一个对比，同样可以通过一些命令确定是否为<strong>域控或域成员</strong></p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>查看信息</th>
+<th>本机</th>
+<th>域</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>查看用户</td>
+<td>net user</td>
+<td>net user &#x2F;domain</td>
+</tr>
+<tr>
+<td>查看用户组</td>
+<td>net localgroup</td>
+<td>net group #此命令只能在域控使用</td>
+</tr>
+<tr>
+<td>查看管理组</td>
+<td>net localgroup Administrators</td>
+<td>net group “Domain Administrators”</td>
+</tr>
+<tr>
+<td>查看当前登录域、计算机名和用户名</td>
+<td>net config workstation</td>
+<td>net config workstation</td>
+</tr>
+<tr>
+<td>查询时间</td>
+<td>net time #不在域中的主机会报错</td>
+<td>net time #域控服务器会显示当前时间，域成员会请求域控回显时间</td>
+</tr>
+</tbody></table>
+<h2 id="关于域的信息收集，内网扫描通用"><a href="#关于域的信息收集，内网扫描通用" class="headerlink" title="关于域的信息收集，内网扫描通用"></a>关于域的信息收集，内网扫描通用</h2><ol>
+<li><p>查询域内主机</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">net</span> view  </span><br></pre></td></tr></table></figure>
+<p>这里补充一点，如果出现系统错误6118时，在<strong>“服务”</strong>界面将<strong>“Computer Browser”</strong>服务开启（默认关闭）</p>
+</li>
+<li><p>bat命令查询域内主机</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> /l %i <span class="keyword">in</span> (<span class="number">1</span>,<span class="number">1</span>,<span class="number">255</span>) <span class="keyword">do</span> @<span class="built_in">ping</span> <span class="number">192</span>.<span class="number">168</span>.<span class="number">0</span>.%i -w <span class="number">1</span> -n <span class="number">1</span>|<span class="built_in">find</span> /i &quot;ttl=&quot;  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nbtscan发现主机</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nbtscan <span class="number">192</span>.<span class="number">168</span>.<span class="number">101</span>.<span class="number">0</span>/<span class="number">24</span>  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>msf进行主机探测</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">auxiliary/scanner/discovery/arp_sweep   <span class="comment">#ARP扫描  </span></span><br><span class="line">auxiliary/scanner/discovery/udp_sweep   <span class="comment">#UDP扫描  </span></span><br><span class="line">auxiliary/scanner/netbios/nbname        <span class="comment">#NETBIOS扫描  </span></span><br><span class="line">auxiliary/scanner/snmp/snmp_enum        <span class="comment">#SNMP扫描  </span></span><br><span class="line">auxiliary/scanner/smb/smb_version       <span class="comment">#SMB扫描  </span></span><br><span class="line">auxiliary/scanner/portscan/ack          <span class="comment">#TCP ACK端口扫描  </span></span><br><span class="line">auxiliary/scanner/portscan/ftpbounce    <span class="comment">#FTP bounce端口扫描  </span></span><br><span class="line">auxiliary/scanner/portscan/syn         <span class="comment">#SYN端口扫描  </span></span><br><span class="line">auxiliary/scanner/portscan/tcp          <span class="comment">#TCP端口扫描    </span></span><br><span class="line">auxiliary/scanner/portscan/xmas         <span class="comment">#TCP XMas端口扫描  </span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nmap主机探测</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">nmap 192.168.101.209    <span class="comment">#最简单的扫描  </span></span><br><span class="line">nmap -sS -sV -T4 192.168.101.209    <span class="comment">#普遍的扫描方式  </span></span><br><span class="line">nmap -A -T4 192.168.101.209     <span class="comment">#全面扫描  </span></span><br><span class="line">nmap --top-ports 100 192.168.101.209    <span class="comment">#扫描可能开放的端口  </span></span><br><span class="line">nmap --script=vuln 192.168.101.209  <span class="comment">#扫描漏洞  </span></span><br><span class="line">nmap -Ss -p 1-65535 -v 192.168.101.209  <span class="comment">#快速扫描全端口  </span></span><br><span class="line">nmap -sP 192.168.101.0/24   <span class="comment">#快速扫描存活主机</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zyth0n.github.io/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" title="内网渗透2之基本信息收集" target="_blank" rel="external">https://zyth0n.github.io/2023/01/14/内网渗透2之基本信息收集/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zyth0n" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zyth0n" target="_blank"><span class="text-dark">zyth0n</span><small class="ml-1x">追寻信息安全的狂热者</small></a></h3>
+        <div>知白守黑</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F3%E4%B9%8Btoken%E7%AA%83%E5%8F%96/" title="内网渗透3之token窃取"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="内网渗透1之环境搭建"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/zyth0n" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>

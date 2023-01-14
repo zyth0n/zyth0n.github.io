@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>内网渗透1之环境搭建 | zyth0n的博客</title>
+  <meta name="description" content="关于内网的几个名词解释 内网（又叫局域网）：某一区域内由多台计算机互联形成的计算机组，更简单的理解就是“封闭型”网络，最简单的例子就是校园网、企业网络等。一般情况下内网只能在内部使用，外部“几乎”无法使用（当然存在可以使用的例外情况，这里不展开）。  工作组：内网计算机组的架构形式，这个架构形式不存在集中管理一说，因为可以直接在计算机属性-&gt;更改设置-&gt;系统属性-&gt;更改进行修改，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内网渗透1之环境搭建">
+<meta property="og:url" content="https://zyth0n.github.io/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="zyth0n的博客">
+<meta property="og:description" content="关于内网的几个名词解释 内网（又叫局域网）：某一区域内由多台计算机互联形成的计算机组，更简单的理解就是“封闭型”网络，最简单的例子就是校园网、企业网络等。一般情况下内网只能在内部使用，外部“几乎”无法使用（当然存在可以使用的例外情况，这里不展开）。  工作组：内网计算机组的架构形式，这个架构形式不存在集中管理一说，因为可以直接在计算机属性-&gt;更改设置-&gt;系统属性-&gt;更改进行修改，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/eVgCtJiDULwc4pf.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/HAPpdDem3FNxUog.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/6hMvHTza1rZsduB.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/lGbpe1RYjvKu5aZ.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/rqtKhkiEGMPsW2x.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/VP74e5qAo3tEYps.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/Kc96BpCZn3lhmuO.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/31nFe4XVakiDyW2.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/D4GdzrbVJ2ypWXn.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/3sEPVf4JwBA7LHx.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/Mgtq82VEYijU73R.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/Sry6bvE3kIBMWqo.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/9YRoEc5TWuXLisA.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/RzahJ94xpQW56bt.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/08/BfP6iZqMYSmazlJ.png">
+<meta property="article:published_time" content="2023-01-14T08:40:06.602Z">
+<meta property="article:modified_time" content="2023-01-14T08:40:06.604Z">
+<meta property="article:author" content="zyth0n">
+<meta property="article:tag" content="内网渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2023/01/08/eVgCtJiDULwc4pf.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zyth0n.github.io/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="zyth0n的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zyth0n" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">zyth0n</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">追寻信息安全的狂热者</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Somewhere In Your Heart</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/zyth0n" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>只求同好，无关浮名</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a><span class="category-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" rel="tag">信息收集</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" rel="tag">内网渗透</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" style="font-size: 13px;">信息收集</a> <a href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" style="font-size: 14px;">内网渗透</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F3%E4%B9%8Btoken%E7%AA%83%E5%8F%96/" class="title">内网渗透3之token窃取</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-14T09:01:29.290Z" itemprop="datePublished">2023-01-14</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" class="title">内网渗透2之基本信息收集</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-14T09:00:51.482Z" itemprop="datePublished">2023-01-14</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="title">内网渗透1之环境搭建</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-14T08:40:06.602Z" itemprop="datePublished">2023-01-14</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E5%86%85%E7%BD%91%E7%9A%84%E5%87%A0%E4%B8%AA%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="toc-number">1.</span> <span class="toc-text">关于内网的几个名词解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A8%A1%E6%8B%9F%E6%90%AD%E5%BB%BA%E5%86%85%E7%BD%91%E7%8E%AF%E5%A2%83"><span class="toc-number">2.</span> <span class="toc-text">使用虚拟机模拟搭建内网环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A0%E5%85%A5%E5%9F%9F"><span class="toc-number">3.</span> <span class="toc-text">计算机加入域</span></a></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-内网渗透1之环境搭建" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      内网渗透1之环境搭建
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="article-date">
+	  <time datetime="2023-01-14T08:40:06.602Z" itemprop="datePublished">2023-01-14</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" rel="tag">内网渗透</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="关于内网的几个名词解释"><a href="#关于内网的几个名词解释" class="headerlink" title="关于内网的几个名词解释"></a>关于内网的几个名词解释</h2><ul>
+<li><p>内网（又叫局域网）：某一区域内由多台计算机互联形成的计算机组，更简单的理解就是<strong>“封闭型”</strong>网络，最简单的例子就是校园网、企业网络等。一般情况下内网只能在内部使用，外部<strong>“几乎”</strong>无法使用（当然存在可以使用的例外情况，这里不展开）。</p>
+</li>
+<li><p>工作组：内网计算机组的架构形式，这个架构形式不存在集中管理一说，因为可以直接在<strong>计算机属性-&gt;更改设置-&gt;系统属性-&gt;更改</strong>进行修改，这就意味着加入或退出任何一个工作组。每个工作组内的每台电脑账号身份都是<strong>对等</strong>的。</p>
+</li>
+<li><p>域（Doamin）：有安全边界（身份认证）的计算机集合。可以理解成工作组的升级版，在安全管理上更严格。每个域内的电脑账号身份<strong>不对等</strong>，最大权限的电脑是<strong>域的创建者（Domain Controller,缩写DC）</strong>，简称<strong>“域控”</strong>。域控中权限最大的账号是<strong>域管理</strong>。</p>
+</li>
+<li><p>DNS域名服务器（Domain Name Server）：实现域名和IP地址进行转换的服务器，因为域中计算机使用DNS定位域控、服务器以及其他计算机、网络服务的。<strong>内网渗透测试中几乎都是通过寻找DNS服务器确定域控位置（DNS服务器通常和域控制器在同一台机器）</strong>。</p>
+</li>
+<li><p>活动目录（Active Directory,缩写AD）：域环境里提供目录服务的组件。简单理解就是集中管理整个域的账号、软件推送和访问权限功能的服务。<strong>域控就是安装了活动目录的计算机</strong>。</p>
+</li>
+</ul>
+<hr>
+<h2 id="使用虚拟机模拟搭建内网环境"><a href="#使用虚拟机模拟搭建内网环境" class="headerlink" title="使用虚拟机模拟搭建内网环境"></a>使用虚拟机模拟搭建内网环境</h2><p>这里选择的域控服务器是<strong>Windows Server 2016</strong>,域用户为<strong>Win10</strong>,为方便后续调试，两台机器网卡均选择“<strong>桥接”</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>IP</th>
+<th>系统</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DC</td>
+<td>192.168.101.202</td>
+<td>Windows Server 2016</td>
+</tr>
+<tr>
+<td>USER</td>
+<td>192.168.101.205</td>
+<td>Win10</td>
+</tr>
+</tbody></table>
+<p>使用<strong>DC</strong>这台计算机建立域，打开<strong>服务器管理器-&gt;添加角色和功能-&gt;四次下一步-&gt;选择Active Directory域服务</strong></p>
+<p><img src="https://s2.loli.net/2023/01/08/eVgCtJiDULwc4pf.png" alt="2023-01-08_17-45.png"></p>
+<p>一直点击下一步，直到确认安装所选内容，点击“安装”，结束安装后重启，<strong>将此服务器提升为域控制器</strong></p>
+<p><img src="https://s2.loli.net/2023/01/08/HAPpdDem3FNxUog.png" alt="2023-01-08_17-50.png"></p>
+<p>此处选择“添加新林”，输入你要设置的根域名</p>
+<p><img src="https://s2.loli.net/2023/01/08/6hMvHTza1rZsduB.png" alt="2023-01-08_17-57.png"></p>
+<p>选择新林和根域的功能级别为2012,设置DSRM密码（<strong>这里设置的是不是域环境管理员的密码，是数据库恢复重置的密码！</strong>），一直下一步点击安装，安装成功后会自动重启，输入先前安装系统设置的<strong>域管理员密码</strong>登录</p>
+<p><img src="https://s2.loli.net/2023/01/08/lGbpe1RYjvKu5aZ.png" alt="2023-01-08_18-03.png"></p>
+<p><img src="https://s2.loli.net/2023/01/08/rqtKhkiEGMPsW2x.png" alt="2023-01-08_18-05.png"></p>
+<p><img src="https://s2.loli.net/2023/01/08/VP74e5qAo3tEYps.png" alt="2023-01-08_18-06.png"></p>
+<p>这里输入<code>whoami</code>查看一下，建立成功</p>
+<p><img src="https://s2.loli.net/2023/01/08/Kc96BpCZn3lhmuO.png" alt="2023-01-08_18-18.png"></p>
+<p>这里补充一下如何修改组策略，组策略默认继承域控的本地策略，因此只需要修改本地策略即可修改组策略。<strong>开始-&gt;Windows管理工具-&gt;组策略管理</strong>，这里展开域，找到<strong>Default Domain Policy</strong>,右键“编辑”</p>
+<p><img src="https://s2.loli.net/2023/01/08/31nFe4XVakiDyW2.png" alt="2023-01-08_21-19.png"></p>
+<p>以修改密码策略为例，计算机配置-&gt;策略-&gt;Windows设置-&gt;安全设置-&gt;账户策略-&gt;密码策略</p>
+<p><img src="https://s2.loli.net/2023/01/08/D4GdzrbVJ2ypWXn.png" alt="2023-01-08_21-20.png"></p>
+<p>更改之后可以等待系统自动刷新组策略，或者重启域控，或者使用以下命令手动刷新组策略</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gpupdate /target:computer  #刷新计算机策略  </span><br><span class="line">gpupdate /target:user   #刷新用户策略  </span><br><span class="line">gpupdate /force     #两者都刷新  </span><br></pre></td></tr></table></figure>
+
+<h2 id="计算机加入域"><a href="#计算机加入域" class="headerlink" title="计算机加入域"></a>计算机加入域</h2><p><strong>开始-&gt;Windows管理工具-&gt;Active Directory用户和计算机-&gt;展开域-&gt;Users</strong>,在<strong>DC</strong>新建用户test，密码123456,点击完成即可</p>
+<p><img src="https://s2.loli.net/2023/01/08/3sEPVf4JwBA7LHx.png" alt="2023-01-08_21-26.png"></p>
+<p><img src="https://s2.loli.net/2023/01/08/Mgtq82VEYijU73R.png" alt="2023-01-08_21-26_1.png"></p>
+<p><img src="https://s2.loli.net/2023/01/08/Sry6bvE3kIBMWqo.png" alt="2023-01-08_21-26_2.png"></p>
+<p>打开<strong>USER</strong>,修改DNS为<strong>DC</strong>的ip 192.168.101.202,打开<strong>此电脑-&gt;属性-&gt;更改设置-&gt;更改</strong>，将<strong>“隶属于”</strong>改为之前设置的域，重启即可生效</p>
+<p><img src="https://s2.loli.net/2023/01/08/9YRoEc5TWuXLisA.png" alt="2023-01-08_21-35.png"></p>
+<p><img src="https://s2.loli.net/2023/01/08/RzahJ94xpQW56bt.png" alt="2023-01-08_21-37.png"></p>
+<p>重启后，如果要登陆域环境，用户名格式为<code>NetBIOS域名\用户名</code>（适用于win2000以前的机器），或者<code>用户名@域名</code>。也就是“ZYTH0N\test”，或者“<a href="mailto:test@zyth0n.cc">test@zyth0n.cc</a>”，密码123456</p>
+<p><img src="https://s2.loli.net/2023/01/08/BfP6iZqMYSmazlJ.png" alt="2023-01-08_21-44.png"></p>
+<p>至此，内网环境搭建成功。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zyth0n.github.io/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="内网渗透1之环境搭建" target="_blank" rel="external">https://zyth0n.github.io/2023/01/14/内网渗透1之环境搭建/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zyth0n" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zyth0n" target="_blank"><span class="text-dark">zyth0n</span><small class="ml-1x">追寻信息安全的狂热者</small></a></h3>
+        <div>知白守黑</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/01/14/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" title="内网渗透2之基本信息收集"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/zyth0n" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>
